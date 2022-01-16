@@ -33,8 +33,7 @@ import static java.text.MessageFormat.format;
 @RequiredArgsConstructor
 public class MineClass {
     public static void main(String[] args) throws IOException, ParseException {
-        List<BaseReserve> baseReserveList = getBaseReserveList();
-//        System.out.println(baseReserveList);
+        getBaseReserveList();
         writeToCsv();
 
     }
@@ -76,17 +75,14 @@ public class MineClass {
         JSONParser parser = new JSONParser();
         List<String> urlList = getURLList();
         List<BaseReserve> baseReserveList = new ArrayList<>();
-//        List<String> toCSV = new ArrayList<>();
-
         for (int i = 0; i < urlList.size() - 1; i++) {
             URL url2 = new URL(urlList.get(i));
             String stringJason = parseUrl(url2);
 
             JSONArray json = (JSONArray) parser.parse(stringJason);
             List<JSONObject> objectList = new ArrayList<>();
-
-            for (int j = 0; j < json.size(); j++) {
-                objectList.add((JSONObject) json.get(j));
+            for (Object o : json) {
+                objectList.add((JSONObject) o);
             }
 
             BaseReserve model = new BaseReserve(
@@ -95,13 +91,6 @@ public class MineClass {
                     Double.valueOf(String.valueOf(objectList.get(0).get("value"))));
             baseReserveList.add(model);
         }
-//        toCSV.add(getLocalDateArrayList().get(0) + "," + baseReserveList.get(0).getValue() + "," + 00.0);
-//        for (int j = 1; j < baseReserveList.size(); j++) {
-//            double difference = baseReserveList.get(j).getValue() - baseReserveList.get(j - 1).getValue();
-//            toCSV.add(getLocalDateArrayList().get(j) + "," + baseReserveList.get(j).getValue() + "," + difference);
-//        }
-//        System.out.println(toCSV);
-
         return baseReserveList;
     }
 
@@ -125,44 +114,32 @@ public class MineClass {
     public static List<String> getURLList() {
         List<String> URLList = new ArrayList<>();
         List<String> dateURL = getDateURL();
-        for (int i = 0; i < dateURL.size(); i++) {
-            URLList.add("https://bank.gov.ua/NBUStatService/v1/statdirectory/res?date=" + dateURL.get(i) + "&json");
-//            URLList.add(format("https://bank.gov.ua/NBUStatService/v1/statdirectory/res?date={}&json", dateURL.get(i)));
-//            System.out.println(URLList.get(i));
+        for (String s : dateURL) {
+            URLList.add("https://bank.gov.ua/NBUStatService/v1/statdirectory/res?date=" + s + "&json");
         }
         return URLList;
     }
 
-    //DATA
     private static LocalDate dateStart = LocalDate.of(2004, 1, 1);
     private static int numberOfMonths = (LocalDate.now().getYear() - 2004) * 12 + LocalDate.now().getMonthValue();
 
     public static List<LocalDate> getLocalDateArrayList() {
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
         List<LocalDate> localDateArrayList = new ArrayList<>();
-//        List<String> stringList = new ArrayList<>();
         localDateArrayList.add(dateStart);
         for (int i = 0; i < numberOfMonths; i++) {
             localDateArrayList.add(localDateArrayList.get(i).plusMonths(1));
-//            stringList.add(localDateArrayList.get(i).format(formatter));
         }
-//        stringList.add(localDateArrayList.get(localDateArrayList.size() - 1).format(formatter));
-//        System.out.println(localDateArrayList);
         return localDateArrayList;
     }
 
     public static List<String> getDateURL() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-//        List<LocalDate> localDateArrayList = new ArrayList<>();
         List<String> stringList = new ArrayList<>();
         List<LocalDate> localDateArrayList = getLocalDateArrayList();
-//        localDateArrayList.add(dateStart);
         for (int i = 0; i < numberOfMonths; i++) {
-//            localDateArrayList.add(localDateArrayList.get(i).plusMonths(1));
             stringList.add(localDateArrayList.get(i).format(formatter));
         }
         stringList.add(localDateArrayList.get(localDateArrayList.size() - 1).format(formatter));
-//        System.out.println(localDateArrayList);
         return stringList;
     }
 }
