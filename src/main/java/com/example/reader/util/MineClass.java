@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class MineClass {
+    private static LocalDate DATE_START = LocalDate.of(2004, 1, 1);
+    private static int NUMBER_OF_MONTH = (LocalDate.now().getYear() - 2004) * 12 + LocalDate.now().getMonthValue();
+
     public static void main(String[] args) throws IOException, ParseException {
         getBaseReserveList();
         writeToCsv();
@@ -39,9 +42,6 @@ public class MineClass {
             List<String> toCSV = getToCSV();
             writer.writeNext(new String[]{"Month,Value,Difference"});
             toCSV.forEach((p) -> writer.writeNext(new String[]{p}));
-//            for (String s : toCSV) {
-//                writer.writeNext(new String[]{s});
-//            }
             writer.close();
         } catch (IOException | ParseException e) {
             e.printStackTrace();
@@ -63,26 +63,13 @@ public class MineClass {
         JSONParser parser = new JSONParser();
         List<String> urlList = getURLList();
         List<JSONObject> objectList = new ArrayList<>();
-//        List<BaseReserve> baseReserveList = new ArrayList<>();
-
         for (int i = 0; i < urlList.size() - 1; i++) {
             URL url2 = new URL(urlList.get(i));
             String stringJason = parseUrl(url2);
             JSONArray json = (JSONArray) parser.parse(stringJason);
             json.forEach((m) -> objectList.add((JSONObject) m));
-//            for (Object o : json) {
-//                objectList.add((JSONObject) o);
-//            }
         }
-        //        for (JSONObject jsonObject : objectList) {
-//            if (jsonObject.get("id_api").equals("RES_OffReserveAssets")) {
-//                BaseReserve model = new BaseReserve(
-//                        (String) jsonObject.get("dt"),
-//                        (String) jsonObject.get("id_api"),
-//                        Double.valueOf(String.valueOf(jsonObject.get("value"))));
-//                baseReserveList.add(model);
-//            }
-//        }
+
         return objectList.stream()
                 .filter(m -> m.get("id_api").equals("RES_OffReserveAssets"))
                 .map(m -> new BaseReserve(
@@ -110,24 +97,16 @@ public class MineClass {
     }
 
     private static List<String> getURLList() {
-//        List<String> URLList = new ArrayList<>();
         List<String> dateURL = getDateURL();
-        //        for (String s : dateURL) {
-//            URLList.add("https://bank.gov.ua/NBUStatService/v1/statdirectory/res?date=" + s + "&json");
-//        }
         return dateURL.stream()
                 .map(m -> ("https://bank.gov.ua/NBUStatService/v1/statdirectory/res?date=" + m + "&json"))
                 .collect(Collectors.toList());
     }
 
-    private static LocalDate dateStart = LocalDate.of(2004, 1, 1);
-    private static int numberOfMonths = (LocalDate.now().getYear() - 2004) * 12 + LocalDate.now().getMonthValue();
-
     private static List<LocalDate> getLocalDateArrayList() {
-        List<LocalDate> localDateArrayList = new ArrayList<>(numberOfMonths);
-        localDateArrayList.add(dateStart);
-//        localDateArrayList.stream().map(m->m.plusMonths(1)).collect(Collectors.toList());
-        for (int i = 0; i < numberOfMonths; i++) {
+        List<LocalDate> localDateArrayList = new ArrayList<>();
+        localDateArrayList.add(DATE_START);
+        for (int i = 0; i < NUMBER_OF_MONTH; i++) {
             localDateArrayList.add(localDateArrayList.get(i).plusMonths(1));
         }
         return localDateArrayList;
@@ -135,18 +114,7 @@ public class MineClass {
 
     private static List<String> getDateURL() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-
-//        List<String> stringList = new ArrayList<>();
         List<LocalDate> localDateArrayList = getLocalDateArrayList();
-
-        //        stringList.add(localDateArrayList.get(localDateArrayList.size() - 1).format(formatter));
-//        System.out.println(stringList.get(0));
-//        System.out.println(stringList.get(stringList.size()-1));
-
-//        for (int i = 0; i < numberOfMonths; i++) {
-//            stringList.add(localDateArrayList.get(i).format(formatter));
-//        }
-
         return localDateArrayList.stream()
                 .map(s -> s.format(formatter))
                 .collect(Collectors.toList());
