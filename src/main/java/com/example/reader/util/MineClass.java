@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class MineClass {
@@ -107,12 +108,14 @@ public class MineClass {
     }
 
     private static List<String> getURLList() {
-        List<String> URLList = new ArrayList<>();
+//        List<String> URLList = new ArrayList<>();
         List<String> dateURL = getDateURL();
-        for (String s : dateURL) {
-            URLList.add("https://bank.gov.ua/NBUStatService/v1/statdirectory/res?date=" + s + "&json");
-        }
-        return URLList;
+        //        for (String s : dateURL) {
+//            URLList.add("https://bank.gov.ua/NBUStatService/v1/statdirectory/res?date=" + s + "&json");
+//        }
+        return dateURL.stream()
+                .map(m -> ("https://bank.gov.ua/NBUStatService/v1/statdirectory/res?date=" + m + "&json"))
+                .collect(Collectors.toList());
     }
 
     private static LocalDate dateStart = LocalDate.of(2004, 1, 1);
@@ -129,12 +132,21 @@ public class MineClass {
 
     private static List<String> getDateURL() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-        List<String> stringList = new ArrayList<>();
+
+//        List<String> stringList = new ArrayList<>();
         List<LocalDate> localDateArrayList = getLocalDateArrayList();
-        for (int i = 0; i < numberOfMonths; i++) {
-            stringList.add(localDateArrayList.get(i).format(formatter));
-        }
-        stringList.add(localDateArrayList.get(localDateArrayList.size() - 1).format(formatter));
+
+        List<String> stringList = localDateArrayList.stream()
+                .map(s -> s.format(formatter))
+                .collect(Collectors.toList());
+//        stringList.add(localDateArrayList.get(localDateArrayList.size() - 1).format(formatter));
+//        System.out.println(stringList.get(0));
+//        System.out.println(stringList.get(stringList.size()-1));
+
+//        for (int i = 0; i < numberOfMonths; i++) {
+//            stringList.add(localDateArrayList.get(i).format(formatter));
+//        }
+
         return stringList;
     }
 }
