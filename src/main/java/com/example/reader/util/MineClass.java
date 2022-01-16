@@ -38,15 +38,14 @@ public class MineClass {
             CSVWriter writer = new CSVWriter(new FileWriter(csv));
             List<String> toCSV = getToCSV();
             writer.writeNext(new String[]{"Month,Value,Difference"});
-            for (String s : toCSV) {
-                writer.writeNext(new String[]{s});
-            }
-
+            toCSV.forEach((p) -> writer.writeNext(new String[]{p}));
+//            for (String s : toCSV) {
+//                writer.writeNext(new String[]{s});
+//            }
             writer.close();
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
-
     }
 
     private static List<String> getToCSV() throws IOException, ParseException {
@@ -57,7 +56,6 @@ public class MineClass {
             double difference = baseReserveList.get(j).getValue() - baseReserveList.get(j - 1).getValue();
             toCSV.add(getLocalDateArrayList().get(j) + "," + baseReserveList.get(j).getValue() + "," + difference);
         }
-
         return toCSV;
     }
 
@@ -65,29 +63,33 @@ public class MineClass {
         JSONParser parser = new JSONParser();
         List<String> urlList = getURLList();
         List<JSONObject> objectList = new ArrayList<>();
-        List<BaseReserve> baseReserveList = new ArrayList<>();
+//        List<BaseReserve> baseReserveList = new ArrayList<>();
 
         for (int i = 0; i < urlList.size() - 1; i++) {
             URL url2 = new URL(urlList.get(i));
             String stringJason = parseUrl(url2);
-
             JSONArray json = (JSONArray) parser.parse(stringJason);
-
-            for (Object o : json) {
-                objectList.add((JSONObject) o);
-            }
+            json.forEach((m) -> objectList.add((JSONObject) m));
+//            for (Object o : json) {
+//                objectList.add((JSONObject) o);
+//            }
         }
-
-        for (JSONObject jsonObject : objectList) {
-            if (jsonObject.get("id_api").equals("RES_OffReserveAssets")) {
-                BaseReserve model = new BaseReserve(
-                        (String) jsonObject.get("dt"),
-                        (String) jsonObject.get("id_api"),
-                        Double.valueOf(String.valueOf(jsonObject.get("value"))));
-                baseReserveList.add(model);
-            }
-        }
-        return baseReserveList;
+        //        for (JSONObject jsonObject : objectList) {
+//            if (jsonObject.get("id_api").equals("RES_OffReserveAssets")) {
+//                BaseReserve model = new BaseReserve(
+//                        (String) jsonObject.get("dt"),
+//                        (String) jsonObject.get("id_api"),
+//                        Double.valueOf(String.valueOf(jsonObject.get("value"))));
+//                baseReserveList.add(model);
+//            }
+//        }
+        return objectList.stream()
+                .filter(m -> m.get("id_api").equals("RES_OffReserveAssets"))
+                .map(m -> new BaseReserve(
+                        (String) m.get("dt"),
+                        (String) m.get("id_api"),
+                        Double.valueOf(String.valueOf(m.get("value")))))
+                .collect(Collectors.toList());
     }
 
     private static String parseUrl(URL url) {
@@ -122,8 +124,9 @@ public class MineClass {
     private static int numberOfMonths = (LocalDate.now().getYear() - 2004) * 12 + LocalDate.now().getMonthValue();
 
     private static List<LocalDate> getLocalDateArrayList() {
-        List<LocalDate> localDateArrayList = new ArrayList<>();
+        List<LocalDate> localDateArrayList = new ArrayList<>(numberOfMonths);
         localDateArrayList.add(dateStart);
+//        localDateArrayList.stream().map(m->m.plusMonths(1)).collect(Collectors.toList());
         for (int i = 0; i < numberOfMonths; i++) {
             localDateArrayList.add(localDateArrayList.get(i).plusMonths(1));
         }
@@ -136,10 +139,7 @@ public class MineClass {
 //        List<String> stringList = new ArrayList<>();
         List<LocalDate> localDateArrayList = getLocalDateArrayList();
 
-        List<String> stringList = localDateArrayList.stream()
-                .map(s -> s.format(formatter))
-                .collect(Collectors.toList());
-//        stringList.add(localDateArrayList.get(localDateArrayList.size() - 1).format(formatter));
+        //        stringList.add(localDateArrayList.get(localDateArrayList.size() - 1).format(formatter));
 //        System.out.println(stringList.get(0));
 //        System.out.println(stringList.get(stringList.size()-1));
 
@@ -147,6 +147,8 @@ public class MineClass {
 //            stringList.add(localDateArrayList.get(i).format(formatter));
 //        }
 
-        return stringList;
+        return localDateArrayList.stream()
+                .map(s -> s.format(formatter))
+                .collect(Collectors.toList());
     }
 }
