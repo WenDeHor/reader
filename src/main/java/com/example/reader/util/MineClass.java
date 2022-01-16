@@ -1,6 +1,7 @@
 package com.example.reader.util;
 
 import com.example.reader.model.BaseReserve;
+import com.opencsv.CSVWriter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.json.simple.JSONArray;
@@ -9,6 +10,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.BufferedReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -17,39 +19,26 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.opencsv.CSVReader;
-import com.opencsv.CSVWriter;
-import com.opencsv.exceptions.CsvException;
-
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import static java.text.MessageFormat.format;
-
 @RequiredArgsConstructor
 public class MineClass {
     public static void main(String[] args) throws IOException, ParseException {
         getBaseReserveList();
         writeToCsv();
-
     }
 
-    public static String getNameCSV() {
+    private static String getNameCSV() {
         String generatedString = RandomStringUtils.randomAlphanumeric(10);
         return generatedString + ".csv";
     }
 
-    public static void writeToCsv() {
+    private static void writeToCsv() {
         String csv = getNameCSV();
         try {
             CSVWriter writer = new CSVWriter(new FileWriter(csv));
             List<String> toCSV = getToCSV();
-            for (int i = 0; i < toCSV.size(); i++) {
-                writer.writeNext(new String[]{toCSV.get(i)});
+            writer.writeNext(new String[]{"Month,Value,Difference"});
+            for (String s : toCSV) {
+                writer.writeNext(new String[]{s});
             }
 
             writer.close();
@@ -59,7 +48,7 @@ public class MineClass {
 
     }
 
-    public static List<String> getToCSV() throws IOException, ParseException {
+    private static List<String> getToCSV() throws IOException, ParseException {
         List<String> toCSV = new ArrayList<>();
         List<BaseReserve> baseReserveList = getBaseReserveList();
         toCSV.add(getLocalDateArrayList().get(0) + "," + baseReserveList.get(0).getValue() + "," + 00.0);
@@ -71,7 +60,7 @@ public class MineClass {
         return toCSV;
     }
 
-    public static List<BaseReserve> getBaseReserveList() throws IOException, ParseException {
+    private static List<BaseReserve> getBaseReserveList() throws IOException, ParseException {
         JSONParser parser = new JSONParser();
         List<String> urlList = getURLList();
         List<JSONObject> objectList = new ArrayList<>();
@@ -88,19 +77,19 @@ public class MineClass {
             }
         }
 
-        for (int i = 0; i <objectList.size() ; i++) {
-            if(objectList.get(i).get("id_api").equals("RES_OffReserveAssets")){
+        for (JSONObject jsonObject : objectList) {
+            if (jsonObject.get("id_api").equals("RES_OffReserveAssets")) {
                 BaseReserve model = new BaseReserve(
-                        (String) objectList.get(i).get("dt"),
-                        (String) objectList.get(i).get("id_api"),
-                        Double.valueOf(String.valueOf(objectList.get(i).get("value"))));
+                        (String) jsonObject.get("dt"),
+                        (String) jsonObject.get("id_api"),
+                        Double.valueOf(String.valueOf(jsonObject.get("value"))));
                 baseReserveList.add(model);
             }
         }
         return baseReserveList;
     }
 
-    public static String parseUrl(URL url) {
+    private static String parseUrl(URL url) {
         if (url == null) {
             return "";
         }
@@ -117,7 +106,7 @@ public class MineClass {
         return stringBuilder.toString();
     }
 
-    public static List<String> getURLList() {
+    private static List<String> getURLList() {
         List<String> URLList = new ArrayList<>();
         List<String> dateURL = getDateURL();
         for (String s : dateURL) {
@@ -129,7 +118,7 @@ public class MineClass {
     private static LocalDate dateStart = LocalDate.of(2004, 1, 1);
     private static int numberOfMonths = (LocalDate.now().getYear() - 2004) * 12 + LocalDate.now().getMonthValue();
 
-    public static List<LocalDate> getLocalDateArrayList() {
+    private static List<LocalDate> getLocalDateArrayList() {
         List<LocalDate> localDateArrayList = new ArrayList<>();
         localDateArrayList.add(dateStart);
         for (int i = 0; i < numberOfMonths; i++) {
@@ -138,7 +127,7 @@ public class MineClass {
         return localDateArrayList;
     }
 
-    public static List<String> getDateURL() {
+    private static List<String> getDateURL() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
         List<String> stringList = new ArrayList<>();
         List<LocalDate> localDateArrayList = getLocalDateArrayList();
