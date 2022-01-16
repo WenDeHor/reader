@@ -74,22 +74,28 @@ public class MineClass {
     public static List<BaseReserve> getBaseReserveList() throws IOException, ParseException {
         JSONParser parser = new JSONParser();
         List<String> urlList = getURLList();
+        List<JSONObject> objectList = new ArrayList<>();
         List<BaseReserve> baseReserveList = new ArrayList<>();
+
         for (int i = 0; i < urlList.size() - 1; i++) {
             URL url2 = new URL(urlList.get(i));
             String stringJason = parseUrl(url2);
 
             JSONArray json = (JSONArray) parser.parse(stringJason);
-            List<JSONObject> objectList = new ArrayList<>();
+
             for (Object o : json) {
                 objectList.add((JSONObject) o);
             }
+        }
 
-            BaseReserve model = new BaseReserve(
-                    (String) objectList.get(0).get("dt"),
-                    (String) objectList.get(0).get("id_api"),
-                    Double.valueOf(String.valueOf(objectList.get(0).get("value"))));
-            baseReserveList.add(model);
+        for (int i = 0; i <objectList.size() ; i++) {
+            if(objectList.get(i).get("id_api").equals("RES_OffReserveAssets")){
+                BaseReserve model = new BaseReserve(
+                        (String) objectList.get(i).get("dt"),
+                        (String) objectList.get(i).get("id_api"),
+                        Double.valueOf(String.valueOf(objectList.get(i).get("value"))));
+                baseReserveList.add(model);
+            }
         }
         return baseReserveList;
     }
