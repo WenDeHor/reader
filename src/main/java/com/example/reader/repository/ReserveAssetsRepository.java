@@ -1,7 +1,7 @@
 package com.example.reader.repository;
 
-import com.example.reader.model.ReserveAssets;
+import com.example.reader.model.BaseReserve;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ReserveAssetsRepository extends JpaRepository<ReserveAssets, Integer> {
+public interface ReserveAssetsRepository extends JpaRepository<BaseReserve, Integer> {
 }
