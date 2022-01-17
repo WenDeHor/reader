@@ -11,7 +11,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BaseReserve implements Serializable {
+public class ReserveAsset implements Serializable {
     String dt;
     String id_api;
     Double value;

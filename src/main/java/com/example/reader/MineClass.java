@@ -1,6 +1,6 @@
-package com.example.reader.util;
+package com.example.reader;
 
-import com.example.reader.model.BaseReserve;
+import com.example.reader.model.ReserveAsset;
 import com.opencsv.CSVWriter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 public class MineClass {
     private static LocalDate DATE_START = LocalDate.of(2004, 1, 1);
     private static int NUMBER_OF_MONTH = (LocalDate.now().getYear() - 2004) * 12 + LocalDate.now().getMonthValue();
@@ -36,43 +35,43 @@ public class MineClass {
     }
 
     private static void writeToCsv() {
-        String csv = getNameCSV();
+        String nameCSV = getNameCSV();
         try {
-            CSVWriter writer = new CSVWriter(new FileWriter(csv));
-            List<String> toCSV = getToCSV();
+            CSVWriter writer = new CSVWriter(new FileWriter(nameCSV));
+            List<String> listOfStringToCSV = getListOfStringToCSV();
             writer.writeNext(new String[]{"Month,Value,Difference"});
-            toCSV.forEach((p) -> writer.writeNext(new String[]{p}));
+            listOfStringToCSV.forEach((p) -> writer.writeNext(new String[]{p}));
             writer.close();
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
     }
 
-    private static List<String> getToCSV() throws IOException, ParseException {
-        List<String> toCSV = new ArrayList<>();
-        List<BaseReserve> baseReserveList = getBaseReserveList();
-        toCSV.add(getLocalDateArrayList().get(0) + "," + baseReserveList.get(0).getValue() + "," + 00.0);
-        for (int j = 1; j < baseReserveList.size(); j++) {
-            double difference = baseReserveList.get(j).getValue() - baseReserveList.get(j - 1).getValue();
-            toCSV.add(getLocalDateArrayList().get(j) + "," + baseReserveList.get(j).getValue() + "," + difference);
+    private static List<String> getListOfStringToCSV() throws IOException, ParseException {
+        List<String> stringListToCSV = new ArrayList<>();
+        List<ReserveAsset> reserveAssetList = getBaseReserveList();
+        stringListToCSV.add(getLocalDateArrayList().get(0) + "," + reserveAssetList.get(0).getValue() + "," + 00.0);
+        for (int j = 1; j < reserveAssetList.size(); j++) {
+            double difference = reserveAssetList.get(j).getValue() - reserveAssetList.get(j - 1).getValue();
+            stringListToCSV.add(getLocalDateArrayList().get(j) + "," + reserveAssetList.get(j).getValue() + "," + difference);
         }
-        return toCSV;
+        return stringListToCSV;
     }
 
-    private static List<BaseReserve> getBaseReserveList() throws IOException, ParseException {
+    private static List<ReserveAsset> getBaseReserveList() throws IOException, ParseException {
         JSONParser parser = new JSONParser();
         List<String> urlList = getURLList();
-        List<JSONObject> objectList = new ArrayList<>();
+        List<JSONObject> jsonObjectList = new ArrayList<>();
         for (int i = 0; i < urlList.size() - 1; i++) {
-            URL url2 = new URL(urlList.get(i));
-            String stringJason = parseUrl(url2);
-            JSONArray json = (JSONArray) parser.parse(stringJason);
-            json.forEach((m) -> objectList.add((JSONObject) m));
+            URL url = new URL(urlList.get(i));
+            String stringJason = parseUrl(url);
+            JSONArray jsonArray = (JSONArray) parser.parse(stringJason);
+            jsonArray.forEach((m) -> jsonObjectList.add((JSONObject) m));
         }
 
-        return objectList.stream()
+        return jsonObjectList.stream()
                 .filter(m -> m.get("id_api").equals("RES_OffReserveAssets"))
-                .map(m -> new BaseReserve(
+                .map(m -> new ReserveAsset(
                         (String) m.get("dt"),
                         (String) m.get("id_api"),
                         Double.valueOf(String.valueOf(m.get("value")))))
@@ -85,7 +84,6 @@ public class MineClass {
         }
         StringBuilder stringBuilder = new StringBuilder();
         try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
-
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 stringBuilder.append(inputLine);
